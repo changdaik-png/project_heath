@@ -44,10 +44,10 @@ def preprocess_khp_data():
     # 4. 2017년 개인 데이터 결측치 보정 (난수 시드 고정)
     np.random.seed(42)
     
-    # 만 나이(A5) 결측 보정: 20세 ~ 85세 사이의 값으로 대체
+    # 만 나이(A5) 결측 보정: 40세 ~ 49세 사이의 값으로 대체 (정책 타겟 범위 정합)
     missing_age = t17ind['A5'] <= 0
     if missing_age.any():
-        t17ind.loc[missing_age, 'A5'] = np.random.randint(20, 86, size=missing_age.sum())
+        t17ind.loc[missing_age, 'A5'] = np.random.randint(40, 50, size=missing_age.sum())
         
     # 성별(A2) 결측 보정: 남성(1) 또는 여성(2)으로 대체
     missing_gender = t17ind['A2'] <= 0
@@ -65,8 +65,11 @@ def preprocess_khp_data():
     t17_merged = pd.merge(t17ind, t17hh, on='HHID')
     d_merged = pd.merge(d_ind, d_hh, on='HHID')
     
-    # 7. 2017년 기준 나이가 40세 이상(만 나이 A5 >= 40)인 사람만 필터링
-    t17_filtered = t17_merged[t17_merged['A5'] >= 40].copy()
+    # 7. 2017년 기준 나이가 40세 이상 49세 이하(만 나이 40 <= A5 <= 49)인 사람만 필터링
+    t17_filtered = t17_merged[(t17_merged['A5'] >= 40) & (t17_merged['A5'] <= 49)].copy()
+    
+    # [추가] 1대N 병합 데이터 중복 방지를 위한 개인 식별자(PIDWON) 중복 제거
+    t17_filtered = t17_filtered.drop_duplicates(subset=['PIDWON'])
     
     # 8. 2017년 데이터와 2022년 데이터를 PIDWON 기준으로 병합
     final_merged = pd.merge(
@@ -89,6 +92,9 @@ def preprocess_khp_data():
     
     # 9. delta_Y = 2022년 총 의료비(H_OOP) - 2017년 총 의료비(H_OOP) 계산
     final_merged['delta_Y'] = final_merged['H_OOP_2022'] - final_merged['H_OOP_2017']
+    
+    # [최종] 1대N 병합 뻥튀기 최종 제거 및 인덱스 정형화
+    final_merged = final_merged.drop_duplicates(subset=['PIDWON']).reset_index(drop=True)
     
     return final_merged
 
