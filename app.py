@@ -94,10 +94,12 @@ st.markdown("<p class='sub-title'>한국의료패널(KHP) 데이터를 이용해
 st.sidebar.markdown("### 👤 40대 환자 프로필 입력")
 with st.sidebar.form(key='patient_input_form'):
     age = st.slider("만 나이 선택 (40대 타겟)", min_value=40, max_value=49, value=45, step=1)
-    income_range = st.select_slider(
-        "가구 소득 수준 선택",
-        options=['200만 원 미만', '200~400만 원', '400~600만 원', '600만 원 이상'],
-        value='200~400만 원'
+    income_value = st.slider(
+        "가구 연소득 선택 (만원 단위)",
+        min_value=1000,
+        max_value=15000,
+        value=5000,
+        step=500
     )
     gender = st.radio("성별", options=["남", "여"], horizontal=True)
     chronic = st.radio("만성질환 보유 여부", options=["O", "X"], horizontal=True)
@@ -105,19 +107,12 @@ with st.sidebar.form(key='patient_input_form'):
 
 # 사이드바 개별 예측 수행 및 결과 출력 (메인 화면에서 개별 예측 영역 삭제 요건 준수)
 if model_pipeline is not None:
-    income_map = {
-        '200만 원 미만': 100.0,
-        '200~400만 원': 300.0,
-        '400~600만 원': 500.0,
-        '600만 원 이상': 800.0
-    }
-    income_value = income_map[income_range]
     gender_value = 1.0 if gender == "남" else 2.0
     chronic_value = 1 if chronic == "O" else 0
     
     individual_input = pd.DataFrame({
         'Age': [float(age)],
-        'Income': [income_value],
+        'Income': [float(income_value)],
         'Chronic_Disease': [chronic_value],
         'Gender': [gender_value]
     })
@@ -128,7 +123,7 @@ if model_pipeline is not None:
     st.sidebar.markdown("#### 📊 개별 환자 예측 결과")
     if predicted_delta > 0:
         st.sidebar.markdown(f"**의료비 예측 변동액:**  \n<span style='color:#FF4B4B; font-size:1.2rem; font-weight:700;'>▲ +{predicted_delta:,.0f} 원</span>", unsafe_allow_html=True)
-        if income_range in ['200~400만 원', '400~600만 원', '600만 원 이상']:
+        if income_value >= 2400: # 연소득 2,400만 원(기존 월 200만 원 수준) 이상인 경우
             st.sidebar.warning("🚨 [Track 1] 선제적 예방 조기 정밀 검진")
         else:
             st.sidebar.info("🩺 [Track 2] 방문 진료 및 의료 바우처")
@@ -181,9 +176,9 @@ else:
             
             # [사용자 요청] 파일이 업로드되면 터미널 창에 실제 전체 컬럼명 리스트를 먼저 출력
             print("\n" + "="*80)
-            print(f"🏥 [KHP 대량 업로드 진단] 가구 데이터 ({hh_file.name}) 전체 컬럼 목록:")
+            print(f"[KHP 대량 업로드 진단] 가구 데이터 ({hh_file.name}) 전체 컬럼 목록:")
             print(hh_df.columns.tolist())
-            print(f"\n🏥 [KHP 대량 업로드 진단] 개인 데이터 ({ind_file.name}) 전체 컬럼 목록:")
+            print(f"\n[KHP 대량 업로드 진단] 개인 데이터 ({ind_file.name}) 전체 컬럼 목록:")
             print(ind_df.columns.tolist())
             print("="*80 + "\n")
             
