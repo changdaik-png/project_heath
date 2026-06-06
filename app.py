@@ -74,7 +74,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 2. 모델 로드 함수
-@st.cache_resource
 def load_prediction_model():
     model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'model.pkl')
     if not os.path.exists(model_path):
