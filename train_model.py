@@ -57,13 +57,19 @@ def train_and_evaluate_models():
     # 4. 결측치 처리를 포함한 scikit-learn Pipeline 구축
     # 결측치는 평균(mean)으로 보완합니다.
     lr_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='mean')),
+        ('imputer', SimpleImputer(strategy='median')),
         ('regressor', LinearRegression())
     ])
     
     rf_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='mean')),
-        ('regressor', RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1))
+        ('imputer', SimpleImputer(strategy='median')),
+        ('regressor', RandomForestRegressor(
+            n_estimators=200, 
+            max_depth=4, 
+            min_samples_leaf=50, 
+            random_state=42, 
+            n_jobs=-1
+        ))
     ])
     
     # 5. 모델 학습

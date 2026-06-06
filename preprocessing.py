@@ -41,6 +41,12 @@ def preprocess_khp_data():
     # 3. 2017년 총 의료비 변수 H_MEDICALEXP1을 H_OOP로 통일하기 위해 변경
     t17hh = t17hh.rename(columns={'H_MEDICALEXP1': 'H_OOP'})
     
+    # 4. 소득 변수(TOT_INC)의 0 이하 비정상 값을 결측치(NaN) 처리하여 모델의 임퓨팅 메커니즘 연동
+    if 'TOT_INC' in t17hh.columns:
+        t17hh.loc[t17hh['TOT_INC'] <= 0, 'TOT_INC'] = np.nan
+    if 'TOT_INC' in d_hh.columns:
+        d_hh.loc[d_hh['TOT_INC'] <= 0, 'TOT_INC'] = np.nan
+    
     # 4. 2017년 개인 데이터 결측치 보정 (난수 시드 고정)
     np.random.seed(42)
     
