@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches and local environments
+.pytest_cache/
+.venv/
+env/
+venv/
+ENV/
+
+# Large model files
+model.pkl
+
+# Raw SAS Data Folders (Private Panel Data)
+KHP+2017_sas/
+KHP+2022_sas/
+
+# Local configuration / data
+.uv/
+*.sas7bdat
+*.csv
